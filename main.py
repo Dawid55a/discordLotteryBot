@@ -96,25 +96,6 @@ async def on_ready():
     #     await start_banner_lottery_for(guild=guild)
     #     time.sleep(60)
 
-#
-# @client.event
-# async def on_message(message) -> None:
-#     if message.author == client.user:
-#         return
-#
-#     brooklyn_99_quotes = [
-#         'I\'m the human form of the 💯 emoji.',
-#         'Bingpot!',
-#         (
-#             'Cool. Cool cool cool cool cool cool cool, '
-#             'no doubt no doubt no doubt no doubt.'
-#         ),
-#     ]
-#
-#     if message.content == '99!':
-#         response = random.choice(brooklyn_99_quotes)
-#         await message.channel.send(response)
-
 
 class Lottery(commands.Cog):
     # def __init__(self, bot):
@@ -127,20 +108,15 @@ class Lottery(commands.Cog):
         guild: discord.Guild = discord.utils.get(bot.guilds, name=GUILD)
 
         language = await start_banner_lottery_for(guild=guild)
-        
+
         await ctx.send(f"{language} won!")
-        # print(ctx.args)
-        # print(ctx.command)
-        # print(ctx.message)
-        # print(ctx.message.contet)
-        # await ctx.send(ctx)
 
     @commands.command()
     async def vote(self, ctx: discord.ext.commands.context.Context) -> None:
+        """Give your vote on language of your choosing
+            !vote {language}
+        """
         msg: AnyStr = ctx.message.content
-        # mess: discord.Message = ctx.message
-        # date = mess.created_at
-        # date.strftime()
 
         if msg != (str(ctx.prefix) + str(ctx.command)):
 
@@ -162,7 +138,7 @@ class Lottery(commands.Cog):
                     UPDATE language_image_usage SET
                         weight = weight + 100
                     WHERE language = ?;
-                    ''', [voted_language[0]])
+                    ''', [voted_language[0].lower()])
                     database.conn.commit()
                     await ctx.send(f"{ctx.author} voted on {voted_language[0]}")
                 except sqlite3.IntegrityError:
@@ -171,7 +147,36 @@ class Lottery(commands.Cog):
                     print(f"{ctx.author} Voted")
                 return
 
-        await ctx.send(f"Incorrect vote")
+        await ctx.send(f"Incorrect command")
+
+    @commands.command()
+    async def show_votes(self, ctx: discord.ext.commands.context.Context):
+        """Show list containing voter and voted language"""
+        msg: AnyStr = ctx.message.content
+
+        if msg == (str(ctx.prefix) + str(ctx.command)):
+            vote_data = database.conn.execute('''SELECT username,voted_language FROM user_votes;''').fetchall()
+            message = '\n'.join([f"{name:<20} voted {vote}" for name, vote in vote_data])
+            message = "```" + message + "```"
+            await ctx.send(message)
+            print("Voting list showed")
+            return
+        await ctx.send(f"Incorrect command")
+
+    @commands.command()
+    async def show_languages(self, ctx: discord.ext.commands.context.Context):
+        """Show list of possible programing languages"""
+        msg: AnyStr = ctx.message.content
+
+        if msg == (str(ctx.prefix) + str(ctx.command)):
+            languages = database.conn.execute(
+                '''SELECT language FROM language_image_usage GROUP BY language;''').fetchall()
+            message = '\n'.join([f"{i} {lang[0]}" for i, lang in enumerate(languages)])
+            message = "```" + message + "```"
+            await ctx.send(message)
+            print("Languages list showed")
+            return
+        await ctx.send(f"Incorrect command")
 
 
 if __name__ == '__main__':
