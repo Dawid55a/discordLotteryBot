@@ -102,6 +102,8 @@ def init() -> None:
         on user_votes (username);
     ''')
 
+    print("Table user_votes created")
+
     # If language_image_usage is empty
     if conn.execute('SELECT count(*) FROM language_image_usage;').fetchone()[0] == 0:
         language_image = []
