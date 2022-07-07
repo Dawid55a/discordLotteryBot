@@ -1,3 +1,4 @@
+import asyncio
 import os
 import random
 import sqlite3
@@ -86,15 +87,29 @@ async def on_ready():
         f'{bot.user} is connected to the following guild:\n'
         f'{guild.name}(id: {guild.id})'
     )
+    banner_lottery_loop.start()
 
-    # s = sched.scheduler(time.time, time.sleep)
-    # s.enter(next_weekday(datetime.datetime.now(), 5), 0, start_banner_lottery_for)
 
-    # Change banner after 30 seconds
-    # TODO: change banner only if one week passes
-    # while True:
-    #     await start_banner_lottery_for(guild=guild)
-    #     time.sleep(60)
+@tasks.loop(hours=168)
+async def banner_lottery_loop():
+    guild: discord.Guild = discord.utils.get(bot.guilds, name=GUILD)
+    message_channel = bot.get_channel(482274663570079765)
+
+    await message_channel.send("Lottery is starting...")
+
+    language = await start_banner_lottery_for(guild=guild)
+
+    await message_channel.send(f"{language} won!")
+
+
+@banner_lottery_loop.before_loop
+async def before_banner_lottery_loop():
+    for _ in range(60 * 60 * 24 * 7):
+        if datetime.datetime.now().strftime("%H:%M %a") == "18:00 Frd":
+            print('It is time')
+            return
+        await asyncio.sleep(30)
+        # wait some time before an
 
 
 class Lottery(commands.Cog):
