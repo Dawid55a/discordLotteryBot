@@ -6,6 +6,21 @@ import discord
 from discord.ext import commands
 
 import database
+# from main import bot, GUILD
+
+
+async def clear_votes():
+    database.conn.execute('''
+    DELETE FROM user_votes WHERE TRUE;
+    ''')
+
+
+async def reset_used_languages():
+    database.conn.execute('''
+    UPDATE language_image_usage SET
+        used = 0
+    WHERE TRUE;
+    ''')
 
 
 async def find_random_image(language: AnyStr) -> ByteString:
@@ -51,18 +66,29 @@ async def start_banner_lottery_for(guild: discord.Guild) -> AnyStr:
     banner = await find_random_image(chosen_language)
     await guild.edit(banner=banner)
     print("Banner changed")
+    await clear_votes()
+
+    used_percent = database.conn.execute('''
+    SELECT COUNT(*)*1.0/(SELECT COUNT(*) FROM language_image_usage) 
+    FROM language_image_usage
+    WHERE used = 0;
+    ''').fetchone()
+    if used_percent[0] < 0.5:
+        await reset_used_languages()
+
     return chosen_language
 
 
 class Lottery(commands.Cog):
-    # def __init__(self, bot):
-    #     self.bot = bot
+    def __init__(self, bot, guild):
+        self.bot = bot
+        self.guild = guild
 
     @commands.command()
     async def start_lottery(self, ctx: discord.ext.commands.context.Context):
         """Starts lottery countdown"""
         await ctx.send("Lottery is starting...")
-        guild: discord.Guild = discord.utils.get(bot.guilds, name=GUILD)
+        guild: discord.Guild = discord.utils.get(self.bot.guilds, name="X'Gon Give It 2 Ya")
 
         language = await start_banner_lottery_for(guild=guild)
 
