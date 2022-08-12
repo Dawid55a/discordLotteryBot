@@ -6,6 +6,8 @@ import discord
 from discord.ext import commands
 
 import database
+
+
 # from main import bot, GUILD
 
 
@@ -103,7 +105,7 @@ class Lottery(commands.Cog):
 
         if msg != (str(ctx.prefix) + str(ctx.command)):
 
-            voted_language = msg.split()[1:]
+            voted_language: str = msg.split(maxsplit=1)[1].rstrip()
             languages = database.conn.execute('''
             SELECT language FROM language_image_usage
             WHERE 1==1
@@ -111,19 +113,20 @@ class Lottery(commands.Cog):
             ''').fetchall()
             languages = [lang.lower() for lang in list(next(zip(*languages)))]
 
-            if voted_language[0].lower() in languages:
+            if voted_language.lower() in languages:
                 try:
                     database.conn.execute('''
                     INSERT INTO user_votes (username, voted_language, vote_date) VALUES (?, ?, ?);
-                    ''', [str(ctx.author), voted_language[0], ctx.message.created_at.strftime("%Y/%m/%d %H:%M:%S")])
+                    ''', [str(ctx.author), voted_language.lower(),
+                          ctx.message.created_at.strftime("%Y/%m/%d %H:%M:%S")])
 
                     database.conn.execute('''
                     UPDATE language_image_usage SET
                         weight = weight + 100
                     WHERE language = ?;
-                    ''', [voted_language[0].lower()])
+                    ''', [voted_language.lower()])
                     database.conn.commit()
-                    await ctx.send(f"{ctx.author} voted on {voted_language[0]}")
+                    await ctx.send(f"{ctx.author} voted on {voted_language}")
                 except sqlite3.IntegrityError:
                     await ctx.send("You already voted! No take backs")
                 finally:
@@ -136,10 +139,11 @@ class Lottery(commands.Cog):
     async def show_votes(self, ctx: discord.ext.commands.context.Context):
         """Show list containing voter and voted language"""
         msg: AnyStr = ctx.message.content
+        vote: str
 
         if msg == (str(ctx.prefix) + str(ctx.command)):
             vote_data = database.conn.execute('''SELECT username,voted_language FROM user_votes;''').fetchall()
-            message = '\n'.join([f"{name:<20} voted {vote}" for name, vote in vote_data])
+            message = '\n'.join([f"{name:<20} voted {vote.capitalize()}" for name, vote in vote_data])
             message = "```" + message + "```"
             await ctx.send(message)
             print("Voting list showed")
