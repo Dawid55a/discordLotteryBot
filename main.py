@@ -11,7 +11,7 @@ import database
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
-
+CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 bot: discord.ext.commands.Bot = commands.Bot(command_prefix='!',
                                              allowed_mentions=discord.AllowedMentions(everyone=True))
 
@@ -19,7 +19,7 @@ bot: discord.ext.commands.Bot = commands.Bot(command_prefix='!',
 @tasks.loop(hours=168)
 async def banner_lottery_loop():
     guild: discord.Guild = discord.utils.get(bot.guilds, name=GUILD)
-    message_channel = bot.get_channel(482274663570079765)
+    message_channel = bot.get_channel(CHANNEL_ID)
 
     await message_channel.send("@everyone Lottery is starting...")
 
