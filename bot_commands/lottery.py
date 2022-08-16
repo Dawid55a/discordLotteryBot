@@ -156,10 +156,9 @@ class Lottery(commands.Cog):
         await ctx.send(f"Incorrect command")
 
 
-    @commands.command()
+    @commands.command(brief="Show votes or languages")
     async def show(self, ctx: discord.ext.commands.context.Context):
-        """
-            Show:
+        """Show:
                 > votes: list containing voter and voted language
                 > languages: list of possible programming languages
         """
