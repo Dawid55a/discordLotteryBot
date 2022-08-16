@@ -1,0 +1,5 @@
+Anime-Girls-Holding-Programming-Books-master
+.env
+__pycache__/
+bot_commands/__pycache__/
+db.sqlite
