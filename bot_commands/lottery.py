@@ -80,6 +80,26 @@ async def start_banner_lottery_for(guild: discord.Guild) -> AnyStr:
 
     return chosen_language
 
+async def show_votes(ctx: discord.ext.commands.context.Context):
+    vote: str
+    vote_data = database.conn.execute('''SELECT username,voted_language FROM user_votes;''').fetchall()
+    if not vote_data:
+        await ctx.send(f"No one has votes yet. Be the first!")
+    else:
+        message = '\n'.join([f"{name:<20} voted {vote.capitalize()}" for name, vote in vote_data])
+        message = "```" + message + "```"
+        await ctx.send(message)
+        print("Voting list showed")
+    return
+
+async def show_languages(ctx: discord.ext.commands.context.Context):
+    languages = database.conn.execute(
+        '''SELECT language FROM language_image_usage GROUP BY language;''').fetchall()
+    message = '\n'.join([f"{i} {lang[0]}" for i, lang in enumerate(languages)])
+    message = "```" + message + "```"
+    await ctx.send(message)
+    print("Languages list showed")
+    return
 
 class Lottery(commands.Cog):
     def __init__(self, bot, guild):
@@ -135,32 +155,25 @@ class Lottery(commands.Cog):
 
         await ctx.send(f"Incorrect command")
 
+
     @commands.command()
-    async def show_votes(self, ctx: discord.ext.commands.context.Context):
-        """Show list containing voter and voted language"""
+    async def show(self, ctx: discord.ext.commands.context.Context):
+        """
+            Show:
+                > votes: list containing voter and voted language
+                > languages: list of possible programming languages
+        """
         msg: AnyStr = ctx.message.content
         vote: str
-
-        if msg == (str(ctx.prefix) + str(ctx.command)):
-            vote_data = database.conn.execute('''SELECT username,voted_language FROM user_votes;''').fetchall()
-            message = '\n'.join([f"{name:<20} voted {vote.capitalize()}" for name, vote in vote_data])
-            message = "```" + message + "```"
-            await ctx.send(message)
-            print("Voting list showed")
-            return
-        await ctx.send(f"Incorrect command")
-
-    @commands.command()
-    async def show_languages(self, ctx: discord.ext.commands.context.Context):
-        """Show list of possible programing languages"""
-        msg: AnyStr = ctx.message.content
-
-        if msg == (str(ctx.prefix) + str(ctx.command)):
-            languages = database.conn.execute(
-                '''SELECT language FROM language_image_usage GROUP BY language;''').fetchall()
-            message = '\n'.join([f"{i} {lang[0]}" for i, lang in enumerate(languages)])
-            message = "```" + message + "```"
-            await ctx.send(message)
-            print("Languages list showed")
-            return
-        await ctx.send(f"Incorrect command")
+        msg_split = msg.split()
+        if msg != (str(ctx.prefix) + str(ctx.command)) and len(msg_split) == 2:
+            option = msg_split[1]
+            if option == "votes":
+                await show_votes(ctx)
+            elif option == "languages":
+                await show_languages(ctx)
+            else:
+                await ctx.send(f"Incorrect command. Available options (votes | languages)")
+        else:
+            await ctx.send(f"Wrong amount of arguments. !show (votes | languages)")
+            
