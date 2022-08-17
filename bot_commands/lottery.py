@@ -87,7 +87,7 @@ async def show_votes(ctx: discord.ext.commands.context.Context):
         await ctx.send(f"No one has votes yet. Be the first!")
     else:
         message = '\n'.join([f"{name:<20} voted {vote.capitalize()}" for name, vote in vote_data])
-        message = "```" + message + "```"
+        message = "```\n" + message + "\n```"
         await ctx.send(message)
         print("Voting list showed")
     return
@@ -96,7 +96,7 @@ async def show_languages(ctx: discord.ext.commands.context.Context):
     languages = database.conn.execute(
         '''SELECT language FROM language_image_usage GROUP BY language;''').fetchall()
     message = '\n'.join([f"{i} {lang[0]}" for i, lang in enumerate(languages)])
-    message = "```" + message + "```"
+    message = "```\n" + message + "\n```"
     await ctx.send(message)
     print("Languages list showed")
     return
