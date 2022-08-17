@@ -19,7 +19,7 @@ bot: discord.ext.commands.Bot = commands.Bot(command_prefix='!',
 @tasks.loop(hours=168)
 async def banner_lottery_loop():
     guild: discord.Guild = discord.utils.get(bot.guilds, name=GUILD)
-    message_channel = bot.get_channel(CHANNEL_ID)
+    message_channel = bot.get_channel(int(CHANNEL_ID))
 
     await message_channel.send("@everyone Lottery is starting...")
 
