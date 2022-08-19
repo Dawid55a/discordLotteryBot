@@ -45,7 +45,7 @@ async def find_random_image(language: AnyStr) -> ByteString:
 
     database.conn.commit()
 
-    with open(f"Anime-Girls-Holding-Programming-Books-master/{language}/{banner_image}", 'rb') as image:
+    with open(f"anime/{language}/{banner_image}", 'rb') as image:
         banner = image.read()
     return banner
 
