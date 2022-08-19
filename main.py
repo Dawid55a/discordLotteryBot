@@ -1,9 +1,8 @@
 import os
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from dotenv import load_dotenv
-import datetime
-import asyncio
+import aiocron
 
 import bot_commands.lottery as lotto
 import database
@@ -16,7 +15,7 @@ bot: discord.ext.commands.Bot = commands.Bot(command_prefix='!',
                                              allowed_mentions=discord.AllowedMentions(everyone=True))
 
 
-@tasks.loop(hours=168)
+@aiocron.crontab("00 18 * * FRI", start=False)
 async def banner_lottery_loop():
     guild: discord.Guild = discord.utils.get(bot.guilds, name=GUILD)
     message_channel = bot.get_channel(int(CHANNEL_ID))
@@ -26,16 +25,6 @@ async def banner_lottery_loop():
     language = await lotto.start_banner_lottery_for(guild=guild)
 
     await message_channel.send(f"{language} won!")
-
-
-@banner_lottery_loop.before_loop
-async def before_banner_lottery_loop():
-    for _ in range(60 * 60 * 24 * 7):
-        if datetime.datetime.now().strftime("%H:%M %a") == "18:00 Fri":
-            print('It is time')
-            return
-        await asyncio.sleep(30)
-        # wait some time before an
 
 
 @bot.event
