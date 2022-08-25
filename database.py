@@ -108,7 +108,7 @@ def init() -> None:
     if conn.execute('SELECT count(*) FROM language_image_usage;').fetchone()[0] == 0:
         language_image = []
         for lang in lang_weighted.keys():
-            images: List = next(os.walk(f'Anime-Girls-Holding-Programming-Books-master/{lang}'), (None, None, []))[2]
+            images: List = next(os.walk(f'anime/{lang}'), (None, None, []))[2]
             for img in images:
                 language_image.append((lang, img))
         print(language_image)
