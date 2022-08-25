@@ -84,7 +84,7 @@ async def show_votes(ctx: discord.ext.commands.context.Context):
     vote: str
     vote_data = database.conn.execute('''SELECT username,voted_language FROM user_votes;''').fetchall()
     if not vote_data:
-        await ctx.send(f"No one has votes yet. Be the first!")
+        await ctx.send(f"No one has voted yet. Be the first!")
     else:
         message = '\n'.join([f"{name:<20} voted {vote.capitalize()}" for name, vote in vote_data])
         message = "```\n" + message + "\n```"
